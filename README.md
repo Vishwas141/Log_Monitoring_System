@@ -47,11 +47,17 @@ To deploy the application in a Kubernetes cluster, follow these steps:
 
 To enable Fluentd logging for the application, follow these steps:
 
-1. Configure Fluentd to collect logs from the application pods. Refer to the Fluentd documentation for setup instructions.
+1. Configure Fluentd to collect logs from the application pods. Refer to the Fluentd documentation for setup instructions and from the above files take approriate files.
 
 2. Update the Fluentd configuration to include the appropriate input and output plugins for collecting and forwarding logs.
 
 3. Apply the updated Fluentd configuration.
+    ```bash
+    kubectl apply -f flunetd.yml
+    kubectl apply -f fluentd-configmap.yml
+    kubectl apply -f fluentdrbac.yml
+    ```
+   
 
 ## Usage
 

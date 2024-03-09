@@ -7,6 +7,7 @@ This repository contains code for a mini project.
 - [Description](#description)
 - [Prerequisites](#prerequisites)
 - [Deployment](#deployment)
+- [Fluentd Connection](#fluentd-connection)
 - [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
@@ -41,6 +42,16 @@ To deploy the application in a Kubernetes cluster, follow these steps:
     kubectl apply -f Deployment.yml
     kubectl apply -f Service.yml
     ```
+
+## Fluentd Connection
+
+To enable Fluentd logging for the application, follow these steps:
+
+1. Configure Fluentd to collect logs from the application pods. Refer to the Fluentd documentation for setup instructions.
+
+2. Update the Fluentd configuration to include the appropriate input and output plugins for collecting and forwarding logs.
+
+3. Apply the updated Fluentd configuration.
 
 ## Usage
 

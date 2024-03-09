@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: raje-deployment
+  name: mini-deployment
   labels:
     app: miniproject
 spec:

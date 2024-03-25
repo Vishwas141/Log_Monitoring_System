@@ -1,50 +1,162 @@
-# MiniProject
+# k8s-fluentd
+Kubernetes logging mechanism using EFK (Elastic search, Kibana and Fluentd)
 
-This repository contains code for a mini project.
+#### Prerequisites
 
-## Contents
+- Docker setup: https://docs.docker.com/engine/install/
+- Kubectl installation: https://kubernetes.io/docs/tasks/tools/
+- Minikube setup : https://minikube.sigs.k8s.io/docs/start/
+- helm setup  - https://helm.sh/docs/intro/install/
 
-- [Description](#description)
-- [Prerequisites](#prerequisites)
-- [Deployment](#deployment)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+- Yaml script basics
+- kubernetes basics 
+- Helm basics
 
-## Description
+```
+docker version
 
-The project consists of a Java application (`Main.java`) that is containerized using Docker. The Dockerfile (`Dockerfile`) is provided to build the Docker image for the application. Additionally, a Kubernetes Deployment (`Deployment.yml`) and Service (`Service.yml`) are defined to deploy and expose the application in a Kubernetes cluster.
+kubectl version
 
-## Prerequisites
+minikube version
 
-Before deploying the application, ensure you have the following prerequisites:
+helm version
 
-- Docker installed on your machine to build and run the Docker image.
-- Kubernetes cluster set up and configured to deploy the application (e.g., using Minikube, Docker Desktop, or a cloud provider).
+minikube start
+```
 
-## Deployment
+### Implementation
 
-To deploy the application in a Kubernetes cluster, follow these steps:
+**Step 1: Create Namespace**
 
-1. Build the Docker image:
-    ```bash
-    docker build -t satarkar424/raje .
-    ```
+```
+kubectl create namespace efk-monitoring
 
-2. Push the Docker image to a container registry (optional):
-    ```bash
-    docker push satarkar424/raje
-    ```
+```
+**Step 2: Add Elastic Helm Repository**
 
-3. Apply the Kubernetes Deployment and Service configurations:
-    ```bash
-    kubectl apply -f Deployment.yml
-    kubectl apply -f Service.yml
-    ```
+```
+helm repo add elastic https://helm.elastic.co
+helm repo update
 
-## Usage
+```
 
-Once the application is deployed, you can access it via the NodePort exposed by the Kubernetes Service. Use the following command to get the NodePort:
+**Step 3: Install Elasticsearch**
 
-```bash
-kubectl get service miniproject-service
+```
+helm install elasticsearch elastic/elasticsearch --version 7.17.3 -n efk-monitoring --set replicas=1
+
+```
+
+**Step 4: Install Elasticsearch with Persistence Disabled**
+
+If you want to disable persistence for Elasticsearch (Note: This is suitable for testing purposes only):
+
+```
+helm install elasticsearch elastic/elasticsearch --version 7.17.3 -n efk-monitoring --set persistence.enabled=false,replicas=1
+
+```
+
+**Step 5: Check the Installation**
+
+```
+helm list -n efk-monitoring
+kubectl get pods -n efk-monitoring
+kubectl get svc -n efk-monitoring
+
+```
+
+**Step 6: Install Kibana**
+
+```
+helm install kibana elastic/kibana --version 7.17.3 -n efk-monitoring
+```
+
+**Step 7: Verify Kibana Installation**
+
+```
+kubectl get pods -n efk-monitoring
+```
+
+
+**Step 8: Apply Fluentd Configuration**
+
+Apply the Fluentd ConfigMap and DaemonSet YAML files:
+
+```
+kubectl apply -f ./fluentd-config-map.yaml
+kubectl apply -f ./fluentd-rbac.yaml
+
+```
+
+
+**Step 9: Monitor Fluentd DaemonSet**
+
+Monitor the Fluentd DaemonSet to ensure successful deployment:
+
+```
+kubectl get pods -n kube-system -w
+
+```
+
+**Step 10: Add Dapr Helm Repository** (Optional)
+
+```
+helm repo add dapr https://dapr.github.io/helm-charts/
+helm repo update
+```
+
+
+**Step 11: Install Dapr** (Optional)
+Install Dapr with JSON formatted logs enabled:
+
+```
+helm install dapr dapr/dapr --namespace efk-monitoring --set global.logAsJson=true
+
+```
+
+
+**Step 12: Port Forward Kibana**
+
+To access Kibana web interface:
+
+```
+kubectl port-forward svc/kibana-kibana 5601 -n efk-monitoring
+
+```
+
+**Step13: Deploy the sample application**
+
+```
+kubectl apply -f k8s-app.yml
+
+kubectl get pods
+
+kubectl get svc
+
+kubectl logs <pod-name>
+
+kubectl port-forward svc/myapp 8080
+
+```
+
+
+### Delete all the resources
+
+
+```
+kubectl delete -f k8s-app.yml
+
+kubectl delete -f fluentd-config-map.yaml
+
+kubectl delete -f fluentd-rbac.yaml
+
+helm list -n efk-monitoring
+
+helm uninstall elasticsearch -n efk-monitoring
+
+helm uninstall kibana -n efk-monitoring
+
+```
+
+
+
